@@ -1,0 +1,24 @@
+.about{
+    width: 100%;
+    height: 90vh;
+    margin-top: 40px;
+    margin-bottom: 30px;
+    background-color: rgb(245,229,203); 
+}
+.about h1{
+    color: rgb(150, 89, 11);;
+    font-size: 50px;
+}
+
+.about p{
+    text-align: justify;
+    font-size: 18px;
+    text-justify: inter-word;
+    color: rgb(54, 40, 20);
+}
+
+.about h1{
+    border-bottom: 1px solid rgb(179, 108, 16);
+    padding: 5px;
+
+}

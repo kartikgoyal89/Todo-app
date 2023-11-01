@@ -1,0 +1,23 @@
+.user-png{
+    width: 32px;
+    height: 32px;
+}
+
+.navbar-brand{
+    color: rgb(218, 165, 97);
+    font-size: 30px;
+}
+.navbar-nav{
+    color:rgb(179, 108, 16);
+    font-size: 18px;
+    font-weight: bolder;
+    font-family:Verdana, Geneva, Tahoma, sans-serif
+}
+
+.btn-nav{
+    /* background-color: rgba(240,0,0,0.87); */
+    background-color: rgb(179, 108, 16);
+    border-radius: 5px;
+    color:white !important;
+    font-weight: bold;
+}
