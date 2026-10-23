@@ -8,69 +8,107 @@ router.post("/addTask", async (req, res) => {
     const { title, body, email } = req.body;
     const existingUser = await User.findOne({ email });
 
-    if (existingUser) {
-      const list = new List({ title, body, user: existingUser });
-      await list.save().then(() => res.status(200).json({ list }));
-      existingUser.list.push(list);
-      existingUser.save();
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    const list = new List({ title, body, user: existingUser._id });
+    await list.save();
+
+    existingUser.list.push(list._id);
+    await existingUser.save();
+
+    return res.status(200).json({ list });
   } catch (error) {
     console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 });
 
 // UPDATE TASK
-module.exports = router;
 router.put("/updateTask/:id", async (req, res) => {
   try {
     const { title, body, email } = req.body;
     const existingUser = await User.findOne({ email });
 
-    if (existingUser) {
-      // search the above id passed in updatetask and update it
-      const list = await List.findByIdAndUpdate(req.params.id, { title, body });
-      list
-        .save()
-        .then(() =>
-          res.status(200).json({ message: "Task Updated Succesfully!" })
-        );
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    const list = await List.findOneAndUpdate(
+      { _id: req.params.id, user: existingUser._id },
+      { title, body },
+      { new: true },
+    );
+
+    if (!list) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    return res
+      .status(200)
+      .json({ message: "Task Updated Successfully!", list });
   } catch (error) {
     console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 });
 
 // DELETE TASK
 
-module.exports = router;
 router.delete("/deleteTask/:id", async (req, res) => {
   try {
-    const { title, body, email } = req.body;
-    const existingUser = await User.findOneAndUpdate(
-      { email },
-      { $pull: { list: req.params.id } }
+    const { email } = req.body;
+    const existingUser = await User.findOne({ email });
+
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const list = await List.findOneAndDelete({
+      _id: req.params.id,
+      user: existingUser._id,
+    });
+
+    if (!list) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    await User.updateOne(
+      { _id: existingUser._id },
+      { $pull: { list: req.params.id } },
     );
 
-    if (existingUser) {
-      // search the above id passed in updatetask and update it
-      const list = await List.findByIdAndDelete(req.params.id, {
-        title,
-        body,
-      }).then(() =>
-        res.status(200).json({ message: "Task Deleted Succesfully!" })
-      );
-    }
+    return res.status(200).json({ message: "Task Deleted Successfully!" });
   } catch (error) {
     console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 });
 
 // READ ALL TASKS
 router.get("/getTasks/:id", async (req, res) => {
-  const list = await List.find({ user: req.params.id }).sort({ createdAt: -1 });
-  if (list.length !== 0) {
-    res.status(200).send({ list });
-  } else {
-    res.status(200).send({ message: "No Task Created!" });
+  try {
+    const list = await List.find({ user: req.params.id }).sort({
+      createdAt: -1,
+    });
+
+    if (list.length === 0) {
+      return res.status(200).json({ message: "No Task Created!", list: [] });
+    }
+    return res.status(200).json({ list });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 });
+
+module.exports = router;
